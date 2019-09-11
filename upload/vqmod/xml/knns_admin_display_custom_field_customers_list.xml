@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification
+	xmlns="https://github.com/vqmod/vqmod"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://github.com/vqmod/vqmod https://raw.githubusercontent.com/vqmod/vqmod/master/vqmod.xsd"
+	>
+	<id><![CDATA[[VQMOD] Admin: Display custom field in customers list]]></id>
+	<version>1.0.0</version>
+	<vqmver>2.6.3</vqmver>
+	<author>kanenas.net (aka Nikolas Branis) - nbran@kanenas.net</author>
+	<file name="admin/controller/customer/customer.php" error="log">
+		<operation error="skip">
+			<search position="after"><![CDATA['customer_id'    => $result['customer_id'],]]></search>
+			<add><![CDATA[
+				// kanenas: knns_admin_display_custom_field_customers_list.xml (start) <<
+				'knns_custom_field'    => json_decode($result['custom_field'], true),
+				// kanenas: knns_admin_display_custom_field_customers_list.xml (end) <<
+			]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="before" offset="2"><![CDATA[$data['text_list'] = $this->language->get('text_list');]]></search>
+			<add><![CDATA[
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (start) <<
+		// Custom Fields
+		$this->load->model('customer/custom_field');
+
+		$data['custom_fields'] = array();
+
+		$filter_data = array(
+			'sort'  => 'cf.sort_order',
+			'order' => 'ASC'
+		);
+
+		$custom_fields = $this->model_customer_custom_field->getCustomFields($filter_data);
+
+		foreach ($custom_fields as $custom_field) {
+			$data['custom_fields'][] = array(
+				'custom_field_id'    => $custom_field['custom_field_id'],
+				'custom_field_value' => $this->model_customer_custom_field->getCustomFieldValues($custom_field['custom_field_id']),
+				'name'               => $custom_field['name'],
+				'value'              => $custom_field['value'],
+				'type'               => $custom_field['type'],
+				'location'           => $custom_field['location'],
+				'sort_order'         => $custom_field['sort_order']
+			);
+		}
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (end) <<
+			]]></add>
+		</operation>
+	</file>
+	<file name="admin/view/template/customer/customer_list.tpl" error="log">
+		<operation error="skip">
+			<search position="after"><![CDATA[<td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>]]></search>
+			<add><![CDATA[
+                  <?php // kanenas: knns_admin_display_custom_field_customers_list.xml (start) << ?>
+                  <td class="text-left"><?php if ($sort == 'erpid') { ?>
+                    <a href="<?php echo $sort_erpid; ?>" class="<?php echo strtolower($order); ?>">
+                    <?php foreach ($custom_fields as $custom_field) { ?>
+                    <?php if ($custom_field['location'] == 'account') { ?>
+                    <?php if ($custom_field['type'] == 'text') { ?>
+                    <?php if ( (int) $custom_field['custom_field_id'] === 1 ) { // custom_field_id = 1 >> ERP_ID ?>
+                      <?php echo $custom_field['name']; ?>
+                    <?php } ?>
+                    <?php } ?>
+                    <?php } ?>
+                    <?php } ?>
+                    </a>
+                    <?php } else { ?>
+                    <a href="<?php echo $sort_erpid; ?>">
+                    <?php foreach ($custom_fields as $custom_field) { ?>
+                    <?php if ($custom_field['location'] == 'account') { ?>
+                    <?php if ($custom_field['type'] == 'text') { ?>
+                    <?php if ( (int) $custom_field['custom_field_id'] === 1 ) { // custom_field_id = 1 >> ERP_ID ?>
+                      <?php echo $custom_field['name']; ?>
+                    <?php } ?>
+                    <?php } ?>
+                    <?php } ?>
+                    <?php } ?>
+                    </a>
+                    <?php } ?></td>
+                  <?php // kanenas: knns_admin_display_custom_field_customers_list.xml (end) << ?>
+			]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="before"><![CDATA[<td class="text-left"><?php echo $customer['name']; ?></td>]]></search>
+			<add><![CDATA[
+                  <?php // kanenas: knns_admin_display_custom_field_customers_list.xml (start) << ?>
+                    <td class="text-left"><?php if (isset($customer['knns_custom_field'][1])) { echo $customer['knns_custom_field'][1]; } ?></td>
+                  <?php // kanenas: knns_admin_display_custom_field_customers_list.xml (end) << ?>
+			]]></add>
+		</operation>
+	</file>
+</modification>
