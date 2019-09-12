@@ -4,11 +4,53 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="https://github.com/vqmod/vqmod https://raw.githubusercontent.com/vqmod/vqmod/master/vqmod.xsd"
 	>
-	<id><![CDATA[[VQMOD] Admin: Display custom field in customers list]]></id>
+	<id><![CDATA[[VQMOD] Admin: Display custom field in customers list (filter available)]]></id>
 	<version>1.0.0</version>
 	<vqmver>2.6.3</vqmver>
 	<author>kanenas.net (aka Nikolas Branis) - nbran@kanenas.net</author>
+	<file name="admin/model/customer/customer.php" error="log">
+		<operation error="skip">
+			<search position="after" index="1"><![CDATA[$implode = array();]]></search>
+			<add><![CDATA[
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (start) <<
+		if (!empty($data['filter_knns_custom_field'])) {
+			$implode[] = "c.custom_field LIKE '{\"1\":\"" . $this->db->escape($data['filter_knns_custom_field']) . "%'";
+		}
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (end) <<
+			]]></add>
+		</operation>
+	</file>
 	<file name="admin/controller/customer/customer.php" error="log">
+		<operation error="skip">
+			<search position="after"><![CDATA[protected function getList() {]]></search>
+			<add><![CDATA[
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (start) <<
+		if (isset($this->request->get['filter_knns_custom_field'])) {
+			$filter_knns_custom_field = $this->request->get['filter_knns_custom_field'];
+		} else {
+			$filter_knns_custom_field = null;
+		}
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (end) <<
+			]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="before" index="7,8,9"><![CDATA[if (isset($this->request->get['filter_name'])) {]]></search>
+			<add><![CDATA[
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (start) <<
+		if (isset($this->request->get['filter_knns_custom_field'])) {
+			$url .= '&filter_knns_custom_field=' . urlencode(html_entity_decode($this->request->get['filter_knns_custom_field'], ENT_QUOTES, 'UTF-8'));
+		}
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (end) <<
+			]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="before"><![CDATA['filter_name'              => $filter_name,]]></search>
+			<add><![CDATA[
+			// kanenas: knns_admin_display_custom_field_customers_list.xml (start) <<
+			'filter_knns_custom_field'              => $filter_knns_custom_field,
+			// kanenas: knns_admin_display_custom_field_customers_list.xml (end) <<
+			]]></add>
+		</operation>
 		<operation error="skip">
 			<search position="after"><![CDATA['customer_id'    => $result['customer_id'],]]></search>
 			<add><![CDATA[
@@ -47,14 +89,59 @@
 		// kanenas: knns_admin_display_custom_field_customers_list.xml (end) <<
 			]]></add>
 		</operation>
+		<operation error="skip">
+			<search position="before"><![CDATA[$data['entry_name'] = $this->language->get('entry_name');]]></search>
+			<add><![CDATA[
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (start) <<
+		$data['entry_knns_custom_field'] = $this->language->get('entry_knns_custom_field');
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (end) <<
+			]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="before"><![CDATA[$data['sort_name'] = $this->url->link('customer/customer', 'token=' . $this->session->data['token'] . '&sort=name' . $url, 'SSL');]]></search>
+			<add><![CDATA[
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (start) <<
+		$data['sort_knns_custom_field'] = $this->url->link('customer/customer', 'token=' . $this->session->data['token'] . '&sort=knns_custom_field' . $url, 'SSL');
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (end) <<
+			]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="before"><![CDATA[$data['filter_name'] = $filter_name;]]></search>
+			<add><![CDATA[
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (start) <<
+		$data['filter_knns_custom_field'] = $filter_knns_custom_field;
+		// kanenas: knns_admin_display_custom_field_customers_list.xml (end) <<
+			]]></add>
+		</operation>
+	</file>
+	<file name="admin/language/*/customer/customer.php" error="log">
+		<operation error="skip">
+			<search position="after"><![CDATA[// Entry]]></search>
+			<add><![CDATA[
+// kanenas: knns_admin_display_custom_field_customers_list.xml (start) <<
+$_['entry_knns_custom_field']  = 'ERP_ID';
+// kanenas: knns_admin_display_custom_field_customers_list.xml (end) <<
+			]]></add>
+		</operation>
 	</file>
 	<file name="admin/view/template/customer/customer_list.tpl" error="log">
+		<operation error="skip">
+			<search position="after" index="1"><![CDATA[<div class="col-sm-3">]]></search>
+			<add><![CDATA[
+              <?php // kanenas: knns_admin_display_custom_field_customers_list.xml (start) << ?>
+              <div class="form-group">
+                <label class="control-label" for="input-knns-custom-field"><?php echo $entry_knns_custom_field; ?></label>
+                <input type="text" name="filter_knns_custom_field" value="<?php echo $filter_knns_custom_field; ?>" placeholder="<?php echo $entry_knns_custom_field; ?>" id="input-knns-custom-field" class="form-control" />
+              </div>
+              <?php // kanenas: knns_admin_display_custom_field_customers_list.xml (end) << ?>
+			]]></add>
+		</operation>
 		<operation error="skip">
 			<search position="after"><![CDATA[<td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>]]></search>
 			<add><![CDATA[
                   <?php // kanenas: knns_admin_display_custom_field_customers_list.xml (start) << ?>
-                  <td class="text-left"><?php if ($sort == 'erpid') { ?>
-                    <a href="<?php echo $sort_erpid; ?>" class="<?php echo strtolower($order); ?>">
+                  <td class="text-left"><?php if ($sort == 'knns_custom_field') { ?>
+                    <a href="<?php echo $sort_knns_custom_field; ?>" class="<?php echo strtolower($order); ?>">
                     <?php foreach ($custom_fields as $custom_field) { ?>
                     <?php if ($custom_field['location'] == 'account') { ?>
                     <?php if ($custom_field['type'] == 'text') { ?>
@@ -66,7 +153,7 @@
                     <?php } ?>
                     </a>
                     <?php } else { ?>
-                    <a href="<?php echo $sort_erpid; ?>">
+                    <a href="<?php echo $sort_knns_custom_field; ?>">
                     <?php foreach ($custom_fields as $custom_field) { ?>
                     <?php if ($custom_field['location'] == 'account') { ?>
                     <?php if ($custom_field['type'] == 'text') { ?>
@@ -87,6 +174,18 @@
                   <?php // kanenas: knns_admin_display_custom_field_customers_list.xml (start) << ?>
                     <td class="text-left"><?php if (isset($customer['knns_custom_field'][1])) { echo $customer['knns_custom_field'][1]; } ?></td>
                   <?php // kanenas: knns_admin_display_custom_field_customers_list.xml (end) << ?>
+			]]></add>
+		</operation>
+		<operation error="skip">
+			<search position="before"><![CDATA[var filter_name = $('input[name=\'filter_name\']').val();]]></search>
+			<add><![CDATA[
+    <?php // kanenas: knns_admin_display_custom_field_customers_list.xml (start) << ?>
+	var filter_knns_custom_field = $('input[name=\'filter_knns_custom_field\']').val();
+
+	if (filter_knns_custom_field) {
+		url += '&filter_knns_custom_field=' + encodeURIComponent(filter_knns_custom_field);
+	}
+    <?php // kanenas: knns_admin_display_custom_field_customers_list.xml (end) << ?>
 			]]></add>
 		</operation>
 	</file>
